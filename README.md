@@ -6,3 +6,9 @@ poetry init -n
 .\.venv\Scripts\activate
 
 poetry add fastapi[all]  - add fastapi
+
+uvicorn main:app
+uvicorn main:app --port 9100 --reload
+
+
+ctrl-alt-L 
