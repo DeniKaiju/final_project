@@ -4,7 +4,7 @@ from storage import storage
 
 router = APIRouter(
     prefix='/api/cars',
-    tags=['API', 'Books'],
+    tags=['API', 'Cars'],
 )
 
 
@@ -15,16 +15,24 @@ def create_car(car: NewCarData) -> SavedCar:
 
 
 @router.get('/')
-def get_cars() -> list[dict]:
-    return [{'mark': 'Volvo', 'engine': '2.0T'}]
+def get_cars(search_param: str = None, skip: int = 0, limit: int = 10) -> list[SavedCar]:
+    cars = storage.get_cars(skip, limit, search_param)
+    result = []
+
+    for car in cars:
+        instance = SavedCar(**{'mark': car['mark'], 'model': car['model'], 'price': car['price'], 'cover': car['cover'],
+                               'tags': car['tags'], 'description': car['description'], 'uuid': car['uuid']})
+        result.append(instance)
+    return result
 
 
-@router.put('/update/{car_vin}')
-def get_cars() -> list[dict]:
-    return [{'mark': 'Volvo', 'engine': '2.0T'}]
+@router.patch('/update/{car_id}')
+def update_car(car_id: str, price: float = 100.00):
+    storage.update_car(car_id, price)
+    return {'result': 'OK'}
 
 
 @router.delete('/delete/{car_vin}')
-def get_cars() -> list[dict]:
-    return [{'mark': 'Volvo', 'engine': '2.0T'}]
-
+def delete_car(car_id: str):
+    storage.delete_car(car_id)
+    return {'deleted': True}

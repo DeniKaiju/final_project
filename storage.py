@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 from config import USER, PASSWORD
 import pymongo
 from uuid import uuid4
-from pathlib import Path
-import json
 
 
 class BaseStorage:
@@ -12,15 +10,15 @@ class BaseStorage:
         pass
 
     @abstractmethod
-    def create_car_by_make(self):
+    def get_cars(self, skip: int = 0, limit: int = 10, search_param: str = None):
         pass
 
     @abstractmethod
-    def update_car(self):
+    def update_car(self, car_uuid: str, new_price: float):
         pass
 
     @abstractmethod
-    def delete_car(self):
+    def delete_car(self, book_uuid: str):
         pass
 
 
@@ -39,14 +37,22 @@ class MongoStorage(BaseStorage):
         self.collection.insert_one(car)
         return car
 
-    def create_car_by_make(self):
-        raise NotImplemented
+    def get_cars(self, skip: int = 0, limit: int = 10, search_param: str = None):
+        query = {}
+        if search_param:
+            print(search_param)
+            query = {'mark': {'$regex': search_param.strip()}}
+        return self.collection.find(query).skip(skip).limit(limit)
 
-    def update_car(self):
-        raise NotImplemented
+    def update_car(self, car_uuid: str, new_price: float):
+        filter_data = {'uuid': car_uuid}
+        new_data = {'$set': {'price': new_price}}
+        processed = self.collection.update_one(filter_data, new_data)
+        return processed
 
-    def delete_car(self):
-        raise NotImplemented
+    def delete_car(self, book_uuid: str):
+        filter_data = {'uuid': book_uuid}
+        self.collection.delete_one(filter_data)
 
 
 storage = MongoStorage()
